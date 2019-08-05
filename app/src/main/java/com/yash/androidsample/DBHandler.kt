@@ -96,7 +96,38 @@ class DBHandler(
     }
 
     fun Addemail(email: AlertModel) {
-        val values = ContentValues()
-        values.put(COLUMN_EMAIL, email.userEmail)
+        val db = this.writableDatabase
+        var success: Boolean
+        try {
+            val values = ContentValues()
+            values.put(COLUMN_USERNAME, email.username)
+            values.put(COLUMN_EMAIL, email.userEmail)
+
+            db.insert(TABLE_ALERTEMAIL, null, values)
+        } catch (e: Exception) {
+        } finally {
+            db.close()
+        }
+    }
+
+    fun getemail(username: String): AlertModel? {
+        val query = "SELECT * FROM $TABLE_ALERTEMAIL WHERE $COLUMN_USERNAME =  \"$username\""
+
+        val db = this.writableDatabase
+
+        val cursor = db.rawQuery(query, null)
+
+        var alertModel: AlertModel? = null
+
+        if (cursor.moveToFirst()) {
+            val name = cursor.getString(0)
+            val email = cursor.getString(1)
+            alertModel = AlertModel(name, email)
+
+        }
+        cursor.close()
+
+        db.close()
+        return alertModel
     }
 }

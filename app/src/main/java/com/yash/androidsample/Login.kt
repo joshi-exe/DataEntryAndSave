@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.*
 
 class Login : AppCompatActivity() {
-    lateinit var logusername: TextView
     lateinit var loguserpassword: EditText
     lateinit var DBobject: DBHandler
     lateinit var users: ArrayList<UserModel>
@@ -16,35 +15,44 @@ class Login : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        logusername = findViewById(R.id.username)
         loguserpassword = findViewById(R.id.userpassword)
 
         val logbutton = findViewById<Button>(R.id.logbutton)
         val regpage = findViewById<Button>(R.id.regpage)
         val dropdown = findViewById<Spinner>(R.id.userlist)
 
-        DBobject = DBHandler(this, null, null, 1)
-        users = DBobject.GetUsers()
+        var check: Boolean
 
-        if (users.count() > 0) {
-            val userlist = ArrayList<String>()
-            for (i in 0..users.count() - 1) {
-                userlist.add(users[i].username.toString())
-            }
-            val arrayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, userlist)
-            dropdown.adapter = arrayAdapter
-        } else {
-            logbutton.isEnabled = false
+        try {
+            DBobject = DBHandler(this, null, null, 1)
+            users = DBobject.GetUsers()
+            check = true
+        } catch (e: Exception) {
+            check = false
         }
 
-        dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                Utility.Instance.loggedinuser = users[position]
-            }
+        if (check) {
+            if (users.count() > 0) {
+                val userlist = ArrayList<String>()
+                for (i in 0..users.count() - 1) {
+                    userlist.add(users[i].username.toString())
+                }
+                val arrayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, userlist)
+                dropdown.adapter = arrayAdapter
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Code to perform some action when nothing is selected
+                dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                        Utility.Instance.loggedinuser = users[position]
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>) {
+                    }
+                }
             }
+        } else {
+            logbutton.isEnabled = false
+            Toast.makeText(this, "NO USERS FOUND, Please Register!", Toast.LENGTH_LONG).show()
+
         }
 
         logbutton.setOnClickListener {
