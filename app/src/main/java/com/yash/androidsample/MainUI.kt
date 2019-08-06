@@ -1,9 +1,10 @@
 package com.yash.androidsample
 
-import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.TextView
@@ -11,8 +12,6 @@ import kotlinx.android.synthetic.main.activity_main_ui.*
 
 class MainUI : AppCompatActivity() {
     lateinit var mainusername: TextView
-    val status: Boolean = false
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,10 +23,16 @@ class MainUI : AppCompatActivity() {
 
 
         mainusername = findViewById(R.id.mainusername)
-        if (loggedUser != null) {
-            Utility.alertPref = Utility.alertPref + loggedUser.username.toString()
-            mainusername.text = "Hello, " + loggedUser.username.toString() + "!"
+
+        val checkpref = Utility.alertPref
+        val checkstatuspref = Utility.statusPref
+
+        if (loggedUser != null && !checkpref.contains(loggedUser.username.toString()) && !checkpref.contains(loggedUser.username.toString())) {
+            Utility.alertPref = "switch_pref_" + loggedUser.username.toString()
+            Utility.statusPref = "status_pref_" + loggedUser.username.toString()
         }
+
+        mainusername.text = "Hello, " + loggedUser!!.username.toString() + "!"
 
         alertButton.setOnClickListener {
             val intent = Intent(this, AlertEmail::class.java)
@@ -37,10 +42,11 @@ class MainUI : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val sharedPreferences = getPreferences(Context.MODE_PRIVATE)
 
-        val isAlertEnable = sharedPreferences.getBoolean(Utility.alertPref, false)
-        if (isAlertEnable) {
+        val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val isAlertEnable: Boolean = preferences.getBoolean(Utility.alertPref, false)
+        val isEmailFound: Boolean = preferences.getBoolean(Utility.statusPref, false)
+        if (isAlertEnable && isEmailFound) {
             alertstatus.setBackgroundColor(Color.GREEN)
             alertstatus.text = "Alerts - ON"
         } else {

@@ -1,11 +1,13 @@
 package com.yash.androidsample
 
-import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.constraint.ConstraintLayout
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.*
+
 
 class AlertEmail : AppCompatActivity() {
     lateinit var inputemail: EditText
@@ -25,10 +27,10 @@ class AlertEmail : AppCompatActivity() {
         alertmessage.text = "Alerts are turned off. Enable to get alerts on your E-mail"
         alertview.visibility = View.INVISIBLE
 
-        val sharedPreferences = getPreferences(Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
+        val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val editor: SharedPreferences.Editor = preferences.edit()
 
-        val isAlertEnable = sharedPreferences.getBoolean(Utility.alertPref, false)
+        val isAlertEnable = preferences.getBoolean(Utility.alertPref, false)
 
         switch.isChecked = isAlertEnable
         switch.setOnCheckedChangeListener { _, isChecked ->
@@ -64,7 +66,7 @@ class AlertEmail : AppCompatActivity() {
             val usernameobj = Utility.Instance.loggedinuser
             if (emailobject.isNotEmpty() && emailobject.contains(".com") && emailobject.contains("@") && usernameobj != null) {
                 Toast.makeText(this, "Alerts turned on!", Toast.LENGTH_LONG).show()
-                val emailobj = AlertModel(usernameobj.username.toString(),emailobject)
+                val emailobj = AlertModel(usernameobj.username.toString(), emailobject)
                 val DBobject = DBHandler(this, null, null, 1)
                 DBobject.Addemail(emailobj)
                 checkAlertEmailIsSet()
@@ -76,16 +78,25 @@ class AlertEmail : AppCompatActivity() {
     fun checkAlertEmailIsSet() {
         val DBobject = DBHandler(this, null, null, 1)
         val getusername = Utility.Instance.loggedinuser
-        if(getusername != null)
-        {
-        val getEmail = DBobject.getemail(getusername.username.toString())
-            if(getEmail != null) {
+
+        val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val editor: SharedPreferences.Editor = preferences.edit()
+
+        val isEmailSubmit = preferences.getBoolean(Utility.statusPref, false)
+
+        if (getusername != null) {
+            val getEmail = DBobject.getemail(getusername.username.toString())
+            if (getEmail != null) {
                 alertview.visibility = View.INVISIBLE
                 alertmessage.visibility = View.VISIBLE
                 alertmessage.text = "Alerts have been setup for ${getEmail.userEmail}"
-            }
-            else
+
+                editor.putBoolean(Utility.statusPref, true)
+            } else {
                 alertmessage.text = "Alerts are turned off. Enable to get alerts on your E-mail"
+                editor.putBoolean(Utility.statusPref, false)
+            }
         }
+        editor.commit()
     }
 }
