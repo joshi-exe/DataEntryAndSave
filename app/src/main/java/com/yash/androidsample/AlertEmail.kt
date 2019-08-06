@@ -64,7 +64,7 @@ class AlertEmail : AppCompatActivity() {
         emailsubmit.setOnClickListener {
             val emailobject = inputemail.text.toString()
             val usernameobj = Utility.Instance.loggedinuser
-            if (emailobject.isNotEmpty() && emailobject.contains(".com") && emailobject.contains("@") && usernameobj != null) {
+            if (emailobject.isNotEmpty() && emailobject.contains("@") && usernameobj != null) {
                 Toast.makeText(this, "Alerts turned on!", Toast.LENGTH_LONG).show()
                 val emailobj = AlertModel(usernameobj.username.toString(), emailobject)
                 val DBobject = DBHandler(this, null, null, 1)
